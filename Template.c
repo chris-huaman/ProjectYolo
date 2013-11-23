@@ -2,7 +2,6 @@
 * This is the main file that will be commited
 */
 
-//this is for the goob code
 //variables
 float myZRState[12], myPos[3], otherPos[3], nullList[3],positionOther[12], positionOurs[12], myVel[3], otherVel[3];
 int timeElapsed;
@@ -22,10 +21,10 @@ int sphereColor; //1 for blue -1 for red
 *@author davidLi
 */
 float aV(float number){
-	if(number < 0)	{
-		number = -number;
-	}
-	return number;
+        if(number < 0)        {
+                number = -number;
+        }
+        return number;
 } 
 
 /**
@@ -37,14 +36,14 @@ float aV(float number){
 * @deprecated setSphere is replacement
 */
 
-// void whatColor(){	
+// void whatColor(){        
 // 
 // api.getMyZRState( myZRState );
 // if(timeElapsed == 0){
-// 	//If x is > 0 then you are blue, set iAmRed to false
-// 	if(myZRState[0]/*x coord*/ > 0 ){iAmRed = false;}//ur blue
-// 	else{iAmRed = true;}
-// }	
+//         //If x is > 0 then you are blue, set iAmRed to false
+//         if(myZRState[0]/*x coord*/ > 0 ){iAmRed = false;}//ur blue
+//         else{iAmRed = true;}
+// }        
 // 
 
 
@@ -56,55 +55,89 @@ float aV(float number){
 */
 
 int setSphere(ZRState myState){
-	//if is red
-	if (myState[0] < 0) {
-		return -1; //red
-	} else {
-		return 1; //blue
-	}
+        //if is red
+        if (myState[0] < 0) {
+                return -1; //red
+        } else {
+                return 1; //blue
+        }
 }
 
 /**
 * This function determines whether or not you are in peril of being kicked out of bounds
-* @param zeroForYourselfoneForOther Who you are testing for in peril
 * @return True if you are in peril, false if you are not
 * @author davidLi
+* The function has been redone and is needlessly excessive, im going to shorten it down
+* but id rather give you something working now since we are too close to deadline
+* Detects if you are too close to the edges of the map before 90 secs and returns true if you are
+* @chris
 */
 
-bool inPeril(int zeroForYourselfoneForOther){
-	float test[3];
-	if(zeroForYourselfoneForOther == 0)	{
-		test[0] = myPos[0];
-		test[1] = myPos[1];
-		test[2] = myPos[2];
-	}
-else{
-		test[0] = otherPos[0];
-		test[1] = otherPos[1];
-		test[2] = otherPos[2];
-	}
-	
-return (aV(test[0]) > .48) || (aV(test[1]) > .64) || (aV(test[2]) > .48);
+bool outOfBoundsChecker(float xCoord, float yCoord, float zCoord){
+        
+		boolean inPeril = false;
+		
+		wallOneX = -.64;
+		wallTwoX = .64;
+		wallThreeY = -.80;
+		wallFourY = .80;
+		wallFiveZ = -.64;
+		wallSixZ = .64;	
+		
+		
+		//these are just to switch the values we are working with to positive so that we are
+		//always working the right side of the map in pos nums 
+		if(xCoord < 0){
+			xCoord = xCoord * -1;
+			wallOneX = wallOneX * -1;
+			wallTwoX = wallTwoX * -1;
+			//they both turn negative so that we dont confuse one wall with the other, not really necessary though
+		}
+		if(yCoord < 0){
+			yCoord =yCoord * -1;
+			wallThreeY = wallThreeY * -1;
+			wallFourY = wallFourY * -1;	
+		}
+		if(zCoord < 0){
+			zCoord = zCoord * -1;
+			wallFiveZ = wallFiveZ * -1;
+			wallSixZ = wallSixZ * -1;	
+		}
+		
+		
+		distanceFromWallOneX = calculateDistanceFrom(xCoord, wallOneX);
+		distanceFromWallTwoX = calculateDistanceFrom(xCoord, wallTwoX);
+		distanceFromWallThreeY = calculateDistanceFrom(xCoord, wallThreeY);
+		distanceFromWallFourY = calculateDistanceFrom(xCoord, wallFourY);
+		distanceFromWallFiveZ = calculateDistanceFrom(xCoord, wallFiveZ);
+		distanceFromWallSixZ = calculateDistanceFrom(xCoord, wallSizZ);
+		
+		//if the distance between you and any one of the barriers is .2 or lower return true
+        if(distanceFromWallOneX < .3 ||distanceFromWallTwoX < .3 || distanceFromWallThreeY < .3 || distanceFromWallFourY < .3 || distanceFromWallFiveZ < .3 || distanceFromWallSixZ < .3){
+		inPeril = true;
+		DEBUG(("WE NEED TO GET OUTA HEEEERRR~"));
+		}
+		else{
+		inPeril = false;
+        }
+	return inPeril;
 }
 
 
-/**
+/*
 * This function takes you out of bounds when pushed
 * @author davidLi
+* this function still has yet to be fully redone by me @chris
 */
 
-void gOOOOB() //get out of out of bounds
+void gOOOOB(boolean inPeril) //get out of out of bounds
 {
-	float targetvelocity[3];
-	
-	if(inPeril(0)){
-
-		for(int i=0; i < 3; ++i){
-			targetvelocity[i] = -2*myPos[i];
-		}
-		api.setPositionTarget(nullList);
-		api.setVelocityTarget(targetvelocity);
-	}
+        float targetvelocity[3];
+                for(int i=0; i < 3; ++i){
+                        targetvelocity[i] = -2*myPos[i];
+                }
+                api.setPositionTarget(nullList);
+                api.setVelocityTarget(targetvelocity);
 }
 
 /**
@@ -130,21 +163,31 @@ void getInfo(){
 * @param zC z coordinate to travel to 
 * @author davidLi
 */
+
+
+/*
+function to get a calculated distance from our point and another point
+*/
+float calculateDistanceFrom(float point1, float point2){
+	float distance = sqrtf((point1 - point2) * (point1 - point2));
+	return distance;
+}
+
 void QG(float xC, float yC, float zC){
 
-	float loc[3], distance;
-	loc[0] = xC;
-	loc[1] = yC;
-	loc[2] = zC;
-	distance = sqrtf((loc[0] - myPos[0])*(loc[0] - myPos[0])+(loc[1] - myPos[1])*(loc[1] - myPos[1])+(loc[2] - myPos[2])*(loc[2] - myPos[2]));
+        float loc[3], distance;
+        loc[0] = xC;
+        loc[1] = yC;
+        loc[2] = zC;
+        distance = sqrtf((loc[0] - myPos[0])*(loc[0] - myPos[0])+(loc[1] - myPos[1])*(loc[1] - myPos[1])+(loc[2] - myPos[2])*(loc[2] - myPos[2]));
 
-	if(distance > 0.02){
-		api.setPositionTarget(loc);
-	}else{
-		DEBUG(("You are hitting f*ing wood! \n"));
-	}
+        if(distance > 0.02){
+                api.setPositionTarget(loc);
+        }else{
+                DEBUG(("You are hitting f*ing wood! \n"));
+        }
 }
-		
+                
 
 /**
 *This function is called once at the beginning of the simulation
@@ -160,9 +203,9 @@ void QG(float xC, float yC, float zC){
 * @author jim
 */
 void setValues (float array[3], float a, float b, float c){
-	array[0] = a;
-	array[1] = b;
-	array[2] = c;
+        array[0] = a;
+        array[1] = b;
+        array[2] = c;
 
 }
 
@@ -177,16 +220,16 @@ void setValues (float array[3], float a, float b, float c){
 */
 
 bool isClose(float target[3], float object[3], float distance) {
-	
-	float xDist = object[0] - target[0],
-		yDist = object[1] - target[1],
-		zDist = object[2] - target[2];
-	if(aV(xDist*xDist	+ yDist*yDist + zDist*zDist) <= (distance*distance)){
-		
-		return true;
-	}
-	
-	return false;
+        
+        float xDist = object[0] - target[0],
+                yDist = object[1] - target[1],
+                zDist = object[2] - target[2];
+        if(aV(xDist*xDist        + yDist*yDist + zDist*zDist) <= (distance*distance)){
+                
+                return true;
+        }
+        
+        return false;
 }
 
 /**
@@ -201,21 +244,21 @@ bool isClose(float target[3], float object[3], float distance) {
 
 
 bool isClose(float target, float object, float distance) {
-	
-	if (aV(target - object) < distance){
-		return true;
-	} else {
-		return false;
-	}
-	
+        
+        if (aV(target - object) < distance){
+                return true;
+        } else {
+                return false;
+        }
+        
 }
 
 void init(){
 
-	timeElapsed = 0;
-	nullList[0] = 0;
-	nullList[1] = 0;
-	nullList[2] = 0;
+        timeElapsed = 0;
+        nullList[0] = 0;
+        nullList[1] = 0;
+        nullList[2] = 0;
 
 }
 
@@ -225,28 +268,28 @@ void init(){
 */
 void loop(){
 
-	getInfo();
-	setSphere(myZRState);
-	/*Code vvvv  */
-	
-	
+        getInfo();
+        setSphere(myZRState);
+        /*Code vvvv  */
+        
+        
     QG(0,0,0);
     
     /*Syntacies ~ and ~ functions:
     DON'T TOUCH ANYTHING IN VOID LOOP THAT IS OUTSIDE CODE!
     Your position is myPos[3] Other position is otherPos[3]. 
-	Your velocity is myVel[3] Other velocity is otherVel[3]
-	iAmRed tells you if you are red.True if red, else false
-	QG(float x, float y, float z) is a convenient function
+        Your velocity is myVel[3] Other velocity is otherVel[3]
+        iAmRed tells you if you are red.True if red, else false
+        QG(float x, float y, float z) is a convenient function
     that goes to a location without needing to store a list
     aV() is absolute value function; timeElapsed is time elapsed
     No need to avoid out of bounds; already have gOOOOB()
-	*/
-	
-	
-	
-	
-	/*Code ^^^^  */
-	gOOOOB();
-	timeElapsed++;
+        */
+        
+        
+        
+        
+        /*Code ^^^^  */
+        gOOOOB(outOfBoundsChecker(myPos[0], myPos[1], myPos[2]));//GOOB ACTIVATE!
+        timeElapsed++;
 }
