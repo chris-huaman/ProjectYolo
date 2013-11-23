@@ -70,7 +70,8 @@ int setSphere(ZRState myState){
 * The function has been redone and is needlessly excessive, im going to shorten it down
 * but id rather give you something working now since we are too close to deadline
 * Detects if you are too close to the edges of the map before 90 secs and returns true if you are
-* @chris
+* @param our satellite's x,y,z, then compared to the wall's and checked for distance
+* @author chrisHuaman
 */
 
 bool outOfBoundsChecker(float xCoord, float yCoord, float zCoord){
@@ -165,8 +166,11 @@ void getInfo(){
 */
 
 
-/*
-function to get a calculated distance from our point and another point
+/**
+* Calculates distance from two specifc POINTS (your x and another x)
+* @param coord for object and coord for yourself
+* @param is a x , y  or z coord compared to another coord of x, y, or z
+* @author chrisHuaman
 */
 float calculateDistanceFrom(float point1, float point2){
 	float distance = sqrtf((point1 - point2) * (point1 - point2));
